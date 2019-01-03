@@ -1,8 +1,8 @@
 # 包obstacle_detector
 
-obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数据的障碍的实用程序。检测到的障碍物以线段或圆圈的形式呈现。该包设计用于配备两个激光扫描仪的机器人，因此它包含几个额外的实用程序。resources文件夹中提供的文章描述了该方法的工作原理。
+    obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数据的障碍的实用程序。检测到的障碍物以线段或圆圈的形式呈现。该包设计用于配备两个激光扫描仪的机器人，因此它包含几个额外的实用程序。resources文件夹中提供的文章描述了该方法的工作原理。
 
-该软件包需要Armadillo C++库进行编译和运行。
+    该软件包需要Armadillo C++库进行编译和运行。
 
 -----------------------
 <p align="center">
@@ -24,23 +24,23 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 
 ## 1. The nodes and nodelets  节点和nodelets
 
-该包提供单独的nodes/nodelets来执行单独的任务。在一般解决方案中，以下列方式处理数据：
+    该包提供单独的nodes/nodelets来执行单独的任务。在一般解决方案中，以下列方式处理数据：
 
 `two laser scans` -> `scans merger` -> `merged scan or pcl` -> `obstacle extractor` -> `obstacles` -> `obstacle tracker` -> `refined obstacles`
 
-对于某些情况，直接从激光扫描（没有跟踪）的纯障碍物提取可能就足够了。
+    对于某些情况，直接从激光扫描（没有跟踪）的纯障碍物提取可能就足够了。
 
-可以使用ROS参数服务器配置节点。所有节点都提供私有`params`服务，允许进程从参数服务器获取最新参数。
+    可以使用ROS参数服务器配置节点。所有节点都提供私有`params`服务，允许进程从参数服务器获取最新参数。
 
-所有节点都可以处于活动或睡眠模式，通过在参数服务器中设置适当的变量并调用`params`服务来触发。在睡眠模式下，任何订阅者或发布者都会关闭，节点什么都不做直到再次激活。
+    所有节点都可以处于活动或睡眠模式，通过在参数服务器中设置适当的变量并调用`params`服务来触发。在睡眠模式下，任何订阅者或发布者都会关闭，节点什么都不做直到再次激活。
 
-为了便于使用，建议使用为包中节点提供的合适的Rviz面板。Rviz面板通过参数服务器和服务-客户端调用进行通信，因此必须保持节点的名称不变（参见示例的启动文件）。
+    为了便于使用，建议使用为包中节点提供的合适的Rviz面板。Rviz面板通过参数服务器和服务-客户端调用进行通信，因此必须保持节点的名称不变（参见示例的启动文件）。
 
 ### 1.1. The scans_merger node       节点scans_merger
 
-该节点将两个类型为`sensor_msgs/LaserScan`的消息从主题`front_scan`和`rear_scan`转换为在主题`scan`下发布的相同类型的单个激光扫描，和/或在主题`pcl`下发布的类型为`sensor_msgs/PointCloud`的点云中。两者之间的区别在于，所得到的激光扫描将区域划分为有限数量的圆形扇区，并且在由一些测量点占据的每个区域中放置一个点（或实际上一个范围值），而得到的点云简单地复制从传感器获得的所有点。
+    该节点将两个类型为`sensor_msgs/LaserScan`的消息从主题`front_scan`和`rear_scan`转换为在主题`scan`下发布的相同类型的单个激光扫描，和/或在主题`pcl`下发布的类型为`sensor_msgs/PointCloud`的点云中。两者之间的区别在于，所得到的激光扫描将区域划分为有限数量的圆形扇区，并且在由一些测量点占据的每个区域中放置一个点（或实际上一个范围值），而得到的点云简单地复制从传感器获得的所有点。
 
-首先对输入激光扫描进行校正，以便及时合并扫描仪的运动（参见`laser_geometry`包）。接下来，将从前一步骤获得的两个PCL同步并转换为当前时间点的目标坐标系。
+    首先对输入激光扫描进行校正，以便及时合并扫描仪的运动（参见`laser_geometry`包）。接下来，将从前一步骤获得的两个PCL同步并转换为当前时间点的目标坐标系。
 
 -----------------------
 <p align="center">
@@ -51,9 +51,9 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 
 -----------------------
 
-得到的消息包含关于特定坐标系（例如`robot`）描述的几何数据。假设连接到两个激光扫描仪的坐标系称为`front_scanner`和`rear_scanner`，则必须提供从`robot`系到`front_scanner`系和从`robot`系到`rear_scanner`系的转换。该节点允许人为地将测量点限制在`robot`系周围的某些矩形区域，以及限制所产生的激光扫描范围。在该区域外的点将被丢弃。
+    得到的消息包含关于特定坐标系（例如`robot`）描述的几何数据。假设连接到两个激光扫描仪的坐标系称为`front_scanner`和`rear_scanner`，则必须提供从`robot`系到`front_scanner`系和从`robot`系到`rear_scanner`系的转换。该节点允许人为地将测量点限制在`robot`系周围的某些矩形区域，以及限制所产生的激光扫描范围。在该区域外的点将被丢弃。
 
-即使仅使用一个激光扫描仪，该节点也可用于简单的数据预处理，例如纠正、范围限制或将点重新计算到不同的坐标系。该节点使用以下一组本地参数：
+    即使仅使用一个激光扫描仪，该节点也可用于简单的数据预处理，例如纠正、范围限制或将点重新计算到不同的坐标系。该节点使用以下一组本地参数：
 
 * `~active` (`bool`, default: `true`) - 活动/睡眠模式，
 * `~publish_scan` (`bool`, default: `false`) - 发布合并的激光扫描消息，
@@ -68,7 +68,7 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 * `~fixed_frame_id` (`string`, default: `map`) - 用于扫描纠正的固定坐标系的名称，
 * `~target_frame_id` (`string`, default: `robot`) - 用作生成的激光扫描或点云的原点的坐标系的名称。
 
-该程序包随附Rviz面板。
+    该程序包随附Rviz面板。
 
 -----------------------
 <p align="center">
@@ -81,7 +81,7 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 
 ### 1.2. The obstacle_extractor node   节点obstacle_extractor
 
-此节点将主题为`scan`的类型为`sensor_msgs/LaserScan`的消息或主题为“pcl”的类型为`sensor_msgs/PointCloud`的消息转换为障碍物，这些障碍物在主题`raw_obstacles`下发布为自定义类型`obstacles_detector/Obstacles`的消息。必须以有角度的方式对PCL消息进行排序，因为该算法利用了激光扫描仪的极性。
+    此节点将主题为`scan`的类型为`sensor_msgs/LaserScan`的消息或主题为“pcl”的类型为`sensor_msgs/PointCloud`的消息转换为障碍物，这些障碍物在主题`raw_obstacles`下发布为自定义类型`obstacles_detector/Obstacles`的消息。必须以有角度的方式对PCL消息进行排序，因为该算法利用了激光扫描仪的极性。
 
 -----------------------
 <p align="center">
@@ -92,9 +92,9 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 
 -----------------------
 
-首先将输入点分组为子集并标记为可见或不可见（如果一个组在相邻组的前面，则它是可见的，否则假定它被遮挡）。该算法从每个点子集中提取分段。接下来，检查分段之间可能的合并。然后从分段中提取圆形障碍物并且如果可能的话也进行合并。产生的障碍物集可以转换为专用坐标系。
+    首先将输入点分组为子集并标记为可见或不可见（如果一个组在相邻组的前面，则它是可见的，否则假定它被遮挡）。该算法从每个点子集中提取分段。接下来，检查分段之间可能的合并。然后从分段中提取圆形障碍物并且如果可能的话也进行合并。产生的障碍物集可以转换为专用坐标系。
 
-该节点可使用以下一组本地参数进行配置：
+    该节点可使用以下一组本地参数进行配置：
 
 * `~active` (`bool`, default: `true`) - 活动/睡眠模式
 * `~use_scan` (`bool`, default: `false`) - 使用激光扫描信息
@@ -113,7 +113,7 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 * `~radius_enlargement` (`double`, default: `0.25`) - 通过此值人为地扩大圆半径
 * `~frame_id` (`string`, default: `map`) - 用作生成障碍物原点的坐标系的名称（仅当`transform_coordinates`标志设置为true时使用）
 
-该程序包随附Rviz面板。
+    该程序包随附Rviz面板。
 
 -----------------------
 <p align="center">
@@ -126,7 +126,7 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 
 ### 1.3. The obstacle_tracker node  节点obstacle_tracker
 
-该节点使用卡尔曼滤波器跟踪和过滤圆形障碍物。它从主题`raw_obstacles`订阅自定义类型`obstacle_detector/Obstacles`的消息，并在主题`tracked_obstacles`下发布相同类型的消息。跟踪算法仅应用于圆形障碍物，因此发布消息中的片段列表只是原始片段的副本。跟踪的障碍物补充了关于其速度的附加信息。
+    该节点使用卡尔曼滤波器跟踪和过滤圆形障碍物。它从主题`raw_obstacles`订阅自定义类型`obstacle_detector/Obstacles`的消息，并在主题`tracked_obstacles`下发布相同类型的消息。跟踪算法仅应用于圆形障碍物，因此发布消息中的片段列表只是原始片段的副本。跟踪的障碍物补充了关于其速度的附加信息。
 
 -----------------------
 <p align="center">
@@ -137,7 +137,7 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 
 -----------------------
 
-节点以同步方式工作，默认速率为100Hz。如果较少发布检测到的障碍物，则跟踪器将对其进行超级采样并使其位置和半径平滑。下面的一组本地参数可用于调整节点：
+   节点以同步方式工作，默认速率为100Hz。如果较少发布检测到的障碍物，则跟踪器将对其进行超级采样并使其位置和半径平滑。下面的一组本地参数可用于调整节点：
 
 * `~active` (`bool`, default: `true`) - 活动/睡眠模式
 * `~copy_segments` (`bool`, default: `true`) - 将检测到的段复制到跟踪的障碍物消息中
@@ -150,7 +150,7 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 * `~measurement_variance` (`double`, default `1.0`) - 测量障碍物值的方差（卡尔曼滤波器参数）
 * `~frame_id` (`string`, default: `map`) - 描述障碍物的坐标系的名称
 
-该程序包随附Rviz面板。
+    该程序包随附Rviz面板。
 
 -----------------------
 <p align="center">
@@ -163,7 +163,7 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 
 ### 1.4. The obstacle_publisher node  节点obstacle_publisher
 
-辅助节点，允许以`obstacles`主题下的`obstacles_detector/Obstacles`类型的消息形式发布一组虚拟的圆形障碍物。该节点主要用于离线测试。以下参数用于配置节点：
+    辅助节点，允许以`obstacles`主题下的`obstacles_detector/Obstacles`类型的消息形式发布一组虚拟的圆形障碍物。该节点主要用于离线测试。以下参数用于配置节点：
 
 * `~active` (`bool`, default: `true`) - 活动/睡眠模式
 * `~reset` (`bool`, default: `false`) - 重置障碍物运动计算的时间（由专用的Rviz面板使用）
@@ -173,7 +173,7 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 * `~loop_rate` (`double`, default: `10.0`) - 主循环速率，单位为Hz
 * `~frame_id` (`string`, default: `map`) - 描述障碍物的坐标系的名称
 
-以下参数用于为节点提供一组障碍物：
+    以下参数用于为节点提供一组障碍物：
 
 * `~x_vector` (`std::vector<double>`, default: `[]`) - 障碍物中心点的x坐标数组
 * `~y_vector` (`std::vector<double>`, default: `[]`) - 障碍物中心点的y坐标数组
@@ -181,7 +181,7 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 * `~x_vector` (`std::vector<double>`, default: `[]`) - 障碍物中心点在x方向上的速度数组
 * `~y_vector` (`std::vector<double>`, default: `[]`) - 障碍物中心点在y方向上的速度数组
 
-该程序包随附Rviz面板。
+   该程序包随附Rviz面板。
 
 -----------------------
 <p align="center">
@@ -194,7 +194,7 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 
 ## 2. The messages   消息
 
-该包提供三种自定义消息类型。它们的所有数值均以SI为单位提供。
+    该包提供三种自定义消息类型。它们的所有数值均以SI为单位提供。
 
 * `CircleObstacle`
     - `geometry_msgs/Point center` - 圆形障碍物的中心
@@ -211,14 +211,14 @@ obstacle_detector包提供了用于检测和跟踪由2D激光扫描仪提供数�
 
 ## 3. The launch files  启动文件
 
-提供的启动文件是如何使用`obstacle_detector`包的很好的例子。它们提供了每个提供的节点使用的参数的完整列表。
+    提供的启动文件是如何使用`obstacle_detector`包的很好的例子。它们提供了每个提供的节点使用的参数的完整列表。
 * `demo.launch` - 运行带有记录扫描的rosbag，并使用适当的面板配置Rviz启动所有节点。
 * `nodes_example.launch` - 运行所有节点，并将其参数设置为默认值。
 * `nodelets_example.launch` - 运行所有nodelets，并将其参数设置为默认值。
 
 ## 4. The displays  显示
 
-为了获得更好的视觉效果，准备了适用于“障碍物”消息的Rviz显示。通过它的属性，人们可以改变障碍物的颜色。
+    为了获得更好的视觉效果，准备了适用于“障碍物”消息的Rviz显示。通过它的属性，人们可以改变障碍物的颜色。
 
 Author:
 _Mateusz Przybyla_
